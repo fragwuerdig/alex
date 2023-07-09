@@ -29,8 +29,6 @@ NODE="https://lcd.terrarebels.net"
 #NODE="https://terra-classic-lcd.publicnode.com"
 SLEEP=1
 LIMIT=1000
-HEIGHT_NOW=13575000	 # ~9th july 2023
-HEIGHT_HIST=11025500 # ~180d back
 
 while getopts n:s:l: arg; do
 	case ${arg} in
@@ -61,10 +59,8 @@ done
 # initial query
 res=$(curl -s -H "x-cosmos-block-height: ${HEIGHT_NOW}" --data-urlencode "pagination.limit=${LIMIT}" ${NODE}/cosmos/auth/v1beta1/accounts)
 addrs=$(echo ${res} | jq -r '.accounts[] | select(."@type" == "/cosmos.auth.v1beta1.BaseAccount") | .address')
-for addr in ${addrs}; do
-	balance_now=$(curl -s --data-urlencode "denom=uusd" -H "x-cosmos-block-height: ${HEIGHT_NOW}" ${NODE}/cosmos/bank/v1beta1/balances/${addr}/by_denom | jq -r ."balance"."amount" )
-	balance_hist=$(curl -s --data-urlencode "denom=uusd" -H "x-cosmos-block-height: ${HEIGHT_HIST}" ${NODE}/cosmos/bank/v1beta1/balances/${addr}/by_denom | jq -r ."balance"."amount" )
-	echo "${addr}; ${balance_now}; ${balance_hist}"
+for addr in $addrs;do
+	echo $addr
 done
 next=$(echo $res | jq -r ."pagination"."next_key")
 sleep $SLEEP
@@ -82,12 +78,9 @@ while [ "${next}" != "null" ]; do
 	fi
 	
 	addrs=$(echo ${res} | jq -r '.accounts[] | select(."@type" == "/cosmos.auth.v1beta1.BaseAccount") | .address')
-	for addr in ${addrs}; do
-		balance_now=$(curl -s --data-urlencode "denom=uusd" -H "x-cosmos-block-height: ${HEIGHT_NOW}" ${NODE}/cosmos/bank/v1beta1/balances/${addr}/by_denom | jq -r ."balance"."amount" )
-		balance_hist=$(curl -s --data-urlencode "denom=uusd" -H "x-cosmos-block-height: ${HEIGHT_HIST}" ${NODE}/cosmos/bank/v1beta1/balances/${addr}/by_denom | jq -r ."balance"."amount" )
-		echo "${addr}; ${balance_now}; ${balance_hist}"
+	for addr in $addrs;do
+		echo $addr
 	done
-	
 	sleep $SLEEP
 
 done
